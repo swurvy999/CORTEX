@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CORTEX">
+<link rel="manifest" href="manifest.webmanifest">
+<title>CORTEX // Weekly Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0E;
+    --bg-grid: rgba(168,85,247,0.035);
+    --panel:#131318;
+    --panel-alt:#1A1A21;
+    --panel-raised:#1F1F28;
+    --border:#2C2C36;
+    --border-bright:#4C3A73;
+    --text:#E7E4F0;
+    --text-dim:#8E8AA0;
+    --text-faint:#5C5A6C;
+    --purple:#A855F7;
+    --purple-bright:#C084FC;
+    --purple-deep:#6D28D9;
+    --magenta:#E23FFF;
+    --rank-d:#5B5866;
+    --rank-c:#6F5C99;
+    --rank-b:#8B5FC7;
+    --rank-a:#A855F7;
+    --rank-s:#E23FFF;
+    --shadow:0 4px 16px rgba(0,0,0,0.55);
+    --glow: 0 0 10px rgba(168,85,247,0.5);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; color:var(--text);
+    font-family:'Rajdhani', 'Segoe UI', sans-serif; font-weight:500; font-size:17px;
+    background:
+      repeating-linear-gradient(0deg, var(--bg-grid) 0px, var(--bg-grid) 1px, transparent 1px, transparent 42px),
+      repeating-linear-gradient(90deg, var(--bg-grid) 0px, var(--bg-grid) 1px, transparent 1px, transparent 42px),
+      radial-gradient(ellipse at 20% 0%, rgba(109,40,217,0.10), transparent 55%),
+      radial-gradient(ellipse at 100% 100%, rgba(226,63,255,0.06), transparent 50%),
+      var(--bg);
+    padding:20px 14px 60px;
+  }
+  .hidden{display:none !important;}
+  button, input, select{ font-family:inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible{
+    outline:2px solid var(--purple-bright); outline-offset:2px;
+  }
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-track{ background:var(--panel); }
+  ::-webkit-scrollbar-thumb{ background:var(--border-bright); border-radius:4px; }
+
+  .loading-screen{
+    text-align:center; padding:90px 20px; font-family:'JetBrains Mono',monospace;
+    letter-spacing:0.1em; color:var(--purple-bright); font-size:13px; text-transform:uppercase;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead{
+    max-width:1040px; margin:0 auto 18px; text-align:center;
+    padding:24px 16px 20px; border:1px solid var(--border-bright); border-radius:6px;
+    background:linear-gradient(180deg, var(--panel-raised), var(--panel));
+    box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,0.03);
+    position:relative; overflow:hidden;
+  }
+  .masthead::before{
+    content:''; position:absolute; left:0; right:0; height:2px; top:0;
+    background:linear-gradient(90deg, transparent, var(--purple), transparent);
+    animation:scan 4.5s linear infinite;
+  }
+  @keyframes scan{ 0%{ transform:translateY(0); opacity:0.9;} 95%{ transform:translateY(120px); opacity:0.9;} 100%{ transform:translateY(120px); opacity:0;} }
+  .title-main{
+    font-family:'Orbitron',sans-serif; font-weight:800; letter-spacing:0.14em;
+    font-size:clamp(20px,4vw,28px); margin:0; color:var(--text);
+    text-transform:uppercase;
+  }
+  .title-main span{ color:var(--purple-bright); }
+  .title-sub{
+    margin:6px 0 18px; color:var(--text-dim); font-size:14px;
+    font-family:'JetBrains Mono',monospace; letter-spacing:0.02em;
+  }
+  .stat-row{
+    display:flex; align-items:center; justify-content:center; gap:26px; flex-wrap:wrap;
+  }
+  .level-seal{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .level-badge{
+    width:60px; height:60px;
+    clip-path:polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%);
+    background:radial-gradient(circle at 35% 30%, var(--purple-bright), var(--purple-deep) 75%);
+    border:1px solid var(--border-bright);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Orbitron',sans-serif; font-weight:700; font-size:19px; color:#fff;
+    box-shadow:var(--glow);
+  }
+  .level-title{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.1em; color:var(--purple-bright); text-transform:uppercase;}
+  .stat-block{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .stat-key{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--text-faint); text-transform:uppercase; }
+  .xp-block{ display:flex; flex-direction:column; gap:5px; min-width:220px; flex:1; max-width:320px; }
+  .xp-track{
+    height:14px; border-radius:2px; background:var(--panel-alt);
+    border:1px solid var(--border); overflow:hidden;
+  }
+  .xp-fill{
+    height:100%; width:0%;
+    background:linear-gradient(90deg, var(--purple-deep), var(--purple-bright));
+    transition:width 0.4s ease; box-shadow:0 0 8px rgba(168,85,247,0.6);
+  }
+  .xp-label{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); text-align:center;}
+  .cores-block{ display:flex; align-items:center; gap:8px; font-family:'Orbitron',sans-serif; font-size:17px; color:var(--text); }
+  .core-chip{
+    width:26px; height:26px;
+    clip-path:polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%);
+    background:radial-gradient(circle at 35% 30%, var(--purple-bright), var(--purple-deep) 80%);
+    display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff;
+    font-family:'Orbitron',sans-serif; border:1px solid var(--border-bright);
+  }
+  .sync-count{ font-family:'JetBrains Mono',monospace; font-size:15px; color:var(--purple-bright); }
+  .import-status{
+    margin:16px auto 0; width:max-content; max-width:100%;
+    padding:5px 10px; border:1px solid var(--border); background:rgba(168,85,247,0.05);
+    color:var(--text-faint); font:9px 'JetBrains Mono',monospace; letter-spacing:.12em;
+  }
+  .status-dot{display:inline-block;width:6px;height:6px;margin-right:7px;border-radius:50%;background:var(--purple-bright);box-shadow:0 0 8px var(--purple);}
+
+  /* ---------- Tabs ---------- */
+  .tabs{ max-width:1040px; margin:0 auto; display:flex; gap:5px; justify-content:center; flex-wrap:wrap; }
+  .tab-btn{
+    font-family:'Orbitron',sans-serif; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    background:var(--panel-alt); color:var(--text-dim); border:1px solid var(--border);
+    border-bottom:none; padding:10px 18px; border-radius:5px 5px 0 0; cursor:pointer;
+  }
+  .tab-btn.active{ background:var(--panel); color:var(--purple-bright); border-color:var(--border-bright); box-shadow:0 -2px 10px rgba(168,85,247,0.08); }
+
+  .panels{
+    max-width:1040px; margin:0 auto; background:var(--panel);
+    border:1px solid var(--border-bright); border-radius:0 6px 6px 6px; padding:18px; box-shadow:var(--shadow);
+  }
+
+  .section-lead{ font-family:'JetBrains Mono',monospace; color:var(--text-dim); margin:0 0 14px; text-align:center; font-size:13px; }
+
+  /* ---------- Schedule ---------- */
+  .schedule-wrap{ overflow:auto; max-height:66vh; border:1px solid var(--border); border-radius:6px; }
+  .schedule-grid{ display:grid; grid-template-columns:74px repeat(7, minmax(104px,1fr)); background:var(--panel-alt); }
+  .corner{ position:sticky; top:0; left:0; z-index:4; background:var(--panel-raised); }
+  .day-head{
+    position:sticky; top:0; z-index:3; background:var(--panel-raised);
+    text-align:center; padding:8px 6px 7px; border-bottom:2px solid var(--purple-deep); border-left:1px solid var(--border);
+  }
+  .day-head.day-synced{ background:linear-gradient(180deg, rgba(168,85,247,0.18), var(--panel-raised)); box-shadow:inset 0 0 14px rgba(168,85,247,0.25); }
+  .day-name{ font-family:'Orbitron',sans-serif; font-size:11.5px; letter-spacing:0.08em; color:var(--text);}
+  .day-date{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-faint);}
+  .day-progress{ height:3px; border-radius:2px; background:var(--border); margin-top:6px; overflow:hidden; }
+  .day-progress-fill{ height:100%; background:linear-gradient(90deg, var(--purple-deep), var(--purple-bright)); }
+  .day-synced-badge{
+    margin-top:5px; font-family:'JetBrains Mono',monospace; font-size:8.5px; letter-spacing:0.08em;
+    color:#fff; background:var(--purple-deep); border-radius:3px; padding:2px 5px; display:inline-block;
+    box-shadow:0 0 6px rgba(168,85,247,0.6);
+  }
+  .time-label{
+    position:sticky; left:0; z-index:2; background:var(--panel-raised);
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-faint);
+    text-align:right; padding:3px 8px; border-top:1px solid var(--border); white-space:nowrap;
+  }
+  .time-label.hour-start{ color:var(--text-dim); font-weight:600; border-top:1px solid var(--border-bright);}
+  .slot-cell{ border-top:1px solid var(--border); border-left:1px solid var(--border); min-height:32px; position:relative; padding:2px; }
+  .slot-cell.hour-start{ border-top:1px solid var(--border-bright); }
+  .add-slot-btn{
+    width:100%; height:100%; min-height:28px; background:transparent; border:none;
+    color:var(--text-faint); opacity:0; cursor:pointer; font-size:15px; border-radius:3px;
+  }
+  .slot-cell:hover .add-slot-btn, .add-slot-btn:focus-visible{ opacity:0.7; background:rgba(168,85,247,0.08);}
+  .task-chip{
+    background:var(--panel-alt); border-left:3px solid var(--rank-color);
+    border-radius:3px; padding:3px 6px; font-size:12.5px; line-height:1.25;
+    cursor:pointer; display:flex; align-items:center; gap:5px; height:100%;
+    box-shadow:0 1px 4px rgba(0,0,0,0.4);
+  }
+  .task-chip.completed{ opacity:0.45; }
+  .task-chip.completed .chip-title{ text-decoration:line-through; }
+  .chip-title{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .rank-pill{ text-transform:uppercase; }
+
+  .node-btn{
+    width:15px; height:15px; flex:none; cursor:pointer; padding:0; background:transparent;
+    clip-path:polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%);
+    border:1.5px solid var(--rank-color); position:relative;
+  }
+  .node-btn.checked{
+    background:radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--rank-color) 55%, white), var(--rank-color) 80%);
+    box-shadow:0 0 6px var(--rank-color);
+  }
+  .node-btn.checked::after{
+    content:''; position:absolute; inset:4px; background:#fff; opacity:0.85;
+    clip-path:polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%);
+  }
+
+  /* ---------- Directive Log & Upgrade Bay ---------- */
+  .add-form{
+    display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:center;
+    margin-bottom:16px; padding:12px; background:var(--panel-alt); border:1px dashed var(--border-bright); border-radius:6px;
+  }
+  .add-form input[type="text"]{
+    flex:1; min-width:170px; padding:8px 10px; border:1px solid var(--border); border-radius:4px;
+    background:var(--panel); color:var(--text); font-size:15px;
+  }
+  .add-form select{ padding:8px 10px; border:1px solid var(--border); border-radius:4px; background:var(--panel); color:var(--text); font-size:13px;}
+  .add-form input[type="number"]{ width:100px; padding:8px 10px; border:1px solid var(--border); border-radius:4px; background:var(--panel); color:var(--text); font-size:15px;}
+  .btn{
+    font-family:'Orbitron',sans-serif; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+    background:linear-gradient(180deg, var(--purple-bright), var(--purple-deep)); color:#fff;
+    border:1px solid var(--border-bright); border-radius:4px; padding:9px 16px; cursor:pointer;
+  }
+  .btn:hover{ filter:brightness(1.1); box-shadow:var(--glow); }
+  .btn:disabled{ opacity:0.35; cursor:not-allowed; filter:none; box-shadow:none; background:var(--panel-alt); color:var(--text-faint); }
+  .btn-ghost{ background:transparent; color:var(--text-dim); border:1px solid var(--border); }
+  .btn-danger{ background:transparent; border:none; color:var(--magenta); font-size:16px; cursor:pointer; line-height:1; padding:2px 6px;}
+
+  .quest-list{ display:flex; flex-direction:column; }
+  .quest-row{ display:flex; align-items:center; gap:10px; padding:11px 6px; border-bottom:1px dashed var(--border); }
+  .quest-title{ flex:1; }
+  .quest-title.completed{ text-decoration:line-through; color:var(--text-faint); }
+  .rank-pill{
+    font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.04em;
+    padding:2px 8px; border-radius:3px; color:#fff; background:var(--rank-color); white-space:nowrap;
+  }
+
+  .empty-state{ text-align:center; padding:28px 10px; color:var(--text-faint); font-family:'JetBrains Mono',monospace; font-size:13px; }
+
+  .reward-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:12px; }
+  .reward-card{
+    background:var(--panel-alt); border:1px solid var(--border); border-radius:6px; padding:14px;
+    display:flex; flex-direction:column; gap:8px; box-shadow:0 1px 6px rgba(0,0,0,0.4); position:relative;
+  }
+  .reward-title{ font-weight:600; font-size:16.5px; padding-right:16px; }
+  .reward-cost{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--purple-bright); display:flex; align-items:center; gap:6px;}
+  .reward-claims{ font-size:12px; color:var(--text-faint); font-family:'JetBrains Mono',monospace; }
+  .reward-card .btn-danger{ position:absolute; top:6px; right:6px; }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{ position:fixed; inset:0; background:rgba(5,5,8,0.72); display:flex; align-items:center; justify-content:center; z-index:50; padding:16px; backdrop-filter:blur(2px); }
+  .modal{ background:var(--panel-raised); border:1px solid var(--border-bright); border-radius:6px; padding:22px; width:100%; max-width:380px; box-shadow:0 10px 40px rgba(0,0,0,0.6), var(--glow); }
+  .modal h3{ margin:0 0 14px; font-family:'Orbitron',sans-serif; font-size:15px; color:var(--purple-bright); text-transform:uppercase; letter-spacing:0.06em;}
+  .modal label{ display:block; font-size:11px; color:var(--text-dim); margin:10px 0 4px; font-family:'JetBrains Mono',monospace; letter-spacing:0.05em; text-transform:uppercase; }
+  .modal input[type="text"], .modal select{ width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:4px; background:var(--panel); color:var(--text); font-size:15px; }
+  .modal-actions{ display:flex; gap:8px; margin-top:18px; justify-content:flex-end; flex-wrap:wrap; }
+
+  /* ---------- Toasts / banners ---------- */
+  #toast-container{ position:fixed; top:16px; right:16px; z-index:60; display:flex; flex-direction:column; gap:8px; }
+  .toast{
+    background:var(--panel-raised); border:1px solid var(--purple-deep); border-radius:5px;
+    padding:9px 14px; font-family:'JetBrains Mono',monospace; font-size:12.5px; box-shadow:0 6px 20px rgba(0,0,0,0.5), var(--glow);
+    animation:toast-in 0.25s ease, toast-out 0.3s ease 1.7s forwards;
+  }
+  @keyframes toast-in{ from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);} }
+  @keyframes toast-out{ to{opacity:0; transform:translateY(-6px);} }
+
+  .levelup-banner{
+    position:fixed; top:30%; left:50%; transform:translate(-50%,-50%) scale(0.9); z-index:70;
+    background:var(--panel-raised); border:1px solid var(--purple-bright); border-radius:8px;
+    padding:26px 34px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.6), 0 0 30px rgba(168,85,247,0.5);
+    animation:levelup-pop 0.35s ease forwards, levelup-fade 0.4s ease 2.4s forwards;
+  }
+  .levelup-banner .lu-title{ font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.14em; color:var(--purple-bright); text-transform:uppercase;}
+  .levelup-banner .lu-main{ font-family:'Orbitron',sans-serif; font-size:21px; color:#fff; margin-top:8px; }
+  @keyframes levelup-pop{ to{ transform:translate(-50%,-50%) scale(1); } }
+  @keyframes levelup-fade{ to{ opacity:0; } }
+
+  footer{ max-width:1040px; margin:16px auto 0; text-align:center; }
+  .reset-link{
+    background:none; border:none; color:var(--text-faint); font-size:11.5px; text-decoration:underline;
+    cursor:pointer; font-family:'JetBrains Mono',monospace;
+  }
+
+  .mobile-day-nav,.mobile-mode-label{display:none;}
+  @media (max-width:640px){
+    .mobile-day-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 6px;padding:7px 8px;background:var(--panel-alt);border:1px solid var(--border-bright);border-radius:5px;}
+    .mobile-day-arrow{width:42px;height:34px;border:1px solid var(--border);background:var(--panel-raised);color:var(--purple-bright);font-family:'Orbitron',sans-serif;font-size:24px;line-height:1;cursor:pointer;border-radius:4px;}
+    .mobile-day-arrow:active{background:var(--purple-deep);color:#fff;}
+    .mobile-day-current{flex:1;text-align:center;font-family:'Orbitron',sans-serif;letter-spacing:.12em;color:var(--text);font-size:13px;}
+    .mobile-mode-label{display:block;text-align:center;margin:0 0 8px;color:var(--text-faint);font:9px 'JetBrains Mono',monospace;letter-spacing:.12em;}
+    .schedule-wrap{max-height:68vh;}
+    .schedule-grid{grid-template-columns:62px minmax(0,1fr);width:100%;}
+    .day-head{padding:10px 6px;}
+    .day-name{font-size:13px;}
+    .day-date{font-size:10px;}
+    .slot-cell{min-height:42px;padding:3px;}
+    .time-label{font-size:10px;padding-right:7px;}
+    .task-chip{font-size:13px;padding:5px 7px;min-height:34px;}
+    .node-btn{width:20px;height:20px;}
+    .add-slot-btn{min-height:34px;font-size:18px;opacity:.35;}
+    .masthead{padding:18px 10px 16px;}
+    .stat-row{gap:12px;}
+    .xp-block{min-width:150px;max-width:230px;}
+    .tabs{position:sticky;bottom:8px;z-index:20;background:rgba(10,10,14,.94);padding:5px;border:1px solid var(--border-bright);border-radius:6px;backdrop-filter:blur(8px);}
+    .tab-btn{flex:1;padding:11px 7px;font-size:9px;}
+    .panels{padding:10px;border-radius:0 6px 6px 6px;}
+    .section-lead{font-size:11px;line-height:1.35;}
+  }
+
+  @media (max-width:640px){
+    .schedule-grid{ grid-template-columns:60px repeat(7, minmax(76px,1fr)); }
+    .stat-row{ gap:16px; }
+    .xp-block{ min-width:180px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+    .masthead::before{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading-screen">Establishing neural link…</div>
+
+<div id="main" class="hidden">
+
+  <div class="masthead">
+    <h1 class="title-main">CORTEX <span>// WEEKLY OPS</span></h1>
+    <p class="title-sub">Execute directives. Sync your days. Install cybernetic upgrades.</p>
+    <div class="stat-row">
+      <div class="level-seal">
+        <div class="level-badge" id="level-num">1</div>
+        <div class="level-title" id="level-title">Initiate</div>
+      </div>
+      <div class="xp-block">
+        <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
+        <div class="xp-label" id="xp-text">0 / 80 DATA</div>
+      </div>
+      <div class="cores-block">
+        <div class="core-chip">C</div>
+        <span id="gold-count">0</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-key">Cyber Sync</span>
+        <span class="sync-count" id="sync-count">0 / 7</span>
+      </div>
+    </div>
+    <div class="import-status">
+      <span class="status-dot"></span>
+      WEEKLY BUILD LOADED · 147 SCHEDULED DIRECTIVES
+    </div>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="schedule">Ops Schedule</button>
+    <button class="tab-btn" data-tab="quests">Directive Log</button>
+    <button class="tab-btn" data-tab="rewards">Upgrade Bay</button>
+  </nav>
+
+  <main class="panels">
+    <section id="panel-schedule" class="panel">
+      <p class="section-lead">Imported weekly ops are loaded. Trigger each node when executed. Clear every directive in a day to sync it. Blank spreadsheet ranks remain UNRANKED (0 DATA / 0 CORES).</p>
+      <div class="mobile-day-nav" id="mobile-day-nav">
+        <button class="mobile-day-arrow" id="mobile-prev" aria-label="Previous day">‹</button>
+        <div class="mobile-day-current" id="mobile-day-current">MON</div>
+        <button class="mobile-day-arrow" id="mobile-next" aria-label="Next day">›</button>
+      </div>
+      <div class="mobile-mode-label">MOBILE // SINGLE-DAY VIEW</div>
+      <div class="schedule-wrap">
+        <div id="schedule-grid" class="schedule-grid"></div>
+      </div>
+    </section>
+
+    <section id="panel-quests" class="panel hidden">
+      <p class="section-lead">Directives for the week ahead, unbound by the clock.</p>
+      <div class="add-form">
+        <input type="text" id="new-quest-title" placeholder="Name your directive…" maxlength="80">
+        <select id="new-quest-rank"></select>
+        <button class="btn" id="add-quest-btn">Add Directive</button>
+      </div>
+      <div id="quest-list" class="quest-list"></div>
+    </section>
+
+    <section id="panel-rewards" class="panel hidden">
+      <p class="section-lead">Sync full days on your Ops Schedule to earn bonus Cores. Spend them on cybernetic upgrades.</p>
+      <div class="add-form">
+        <input type="text" id="new-reward-title" placeholder="Name your upgrade…" maxlength="60">
+        <input type="number" id="new-reward-cost" placeholder="Core cost" min="1" value="20">
+        <button class="btn" id="add-reward-btn">Add Upgrade</button>
+      </div>
+      <div id="reward-list" class="reward-grid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <button class="reset-link" id="reset-btn">Wipe local cache</button>
+  </footer>
+</div>
+
+<div id="modal-overlay" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="modal-heading">Log Directive</h3>
+    <label for="modal-title-input">Directive</label>
+    <input type="text" id="modal-title-input" maxlength="80" placeholder="What needs executing?">
+    <label for="modal-rank-select">Priority</label>
+    <select id="modal-rank-select"></select>
+    <div class="modal-actions">
+      <button class="btn-ghost btn" id="modal-delete-btn">Delete</button>
+      <button class="btn-ghost btn" id="modal-cancel-btn">Cancel</button>
+      <button class="btn" id="modal-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'cortex-ops-state-v2';
+  const SLOT_COUNT = 33; // 6:00 AM through 10:00 PM in 30-min steps
+  const DAY_NAMES = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  const RANKS = {
+    U: { label:'Unranked', xp:0, gold:0, color:'var(--text-faint)' },
+    D: { label:'Routine',  xp:10, gold:5,  color:'var(--rank-d)' },
+    C: { label:'Standard', xp:20, gold:10, color:'var(--rank-c)' },
+    B: { label:'Priority', xp:35, gold:20, color:'var(--rank-b)' },
+    A: { label:'Critical', xp:55, gold:35, color:'var(--rank-a)' },
+    S: { label:'Override', xp:85, gold:55, color:'var(--rank-s)' },
+  };
+  const RANK_ORDER = ['U','D','C','B','A','S'];
+  const DAY_SYNC_DATA = 40;
+  const DAY_SYNC_CORES = 30;
+
+  // Imported from WEEKLY BREAKDOWN (1)(1).xlsx. Blank spreadsheet ranks remain Unranked.
+  const IMPORTED_SCHEDULE = {
+  "5-2": {
+    "title": "WAKE UP",
+    "rank": "U",
+    "completed": false
+  },
+  "6-2": {
+    "title": "WAKE UP",
+    "rank": "U",
+    "completed": false
+  },
+  "0-3": {
+    "title": "WAKE UP",
+    "rank": "U",
+    "completed": false
+  },
+  "3-3": {
+    "title": "WAKE UP",
+    "rank": "U",
+    "completed": false
+  },
+  "4-3": {
+    "title": "WAKE UP",
+    "rank": "U",
+    "completed": false
+  },
+  "5-3": {
+    "title": "LEAVE FOR WORK",
+    "rank": "U",
+    "completed": false
+  },
+  "6-3": {
+    "title": "LEAVE FOR WORK",
+    "rank": "U",
+    "completed": false
+  },
+  "0-4": {
+    "title": "LEAVE FOR WORK",
+    "rank": "U",
+    "completed": false
+  },
+  "3-4": {
+    "title": "LEAVE FOR WORK",
+    "rank": "U",
+    "completed": false
+  },
+  "4-4": {
+    "title": "LEAVE FOR WORK",
+    "rank": "U",
+    "completed": false
+  },
+  "5-4": {
+    "title": "CLOCK IN",
+    "rank": "S",
+    "completed": false
+  },
+  "6-4": {
+    "title": "CLOCK IN",
+    "rank": "S",
+    "completed": false
+  },
+  "0-5": {
+    "title": "CLOCK IN",
+    "rank": "S",
+    "completed": false
+  },
+  "3-5": {
+    "title": "CLOCK IN",
+    "rank": "S",
+    "completed": false
+  },
+  "4-5": {
+    "title": "CLOCK IN",
+    "rank": "S",
+    "completed": false
+  },
+  "5-5": {
+    "title": "PICK TICKETS",
+    "rank": "U",
+    "completed": false
+  },
+  "6-5": {
+    "title": "PICK TICKETS",
+    "rank": "U",
+    "completed": false
+  },
+  "0-6": {
+    "title": "PREP ROUTE",
+    "rank": "U",
+    "completed": false
+  },
+  "1-6": {
+    "title": "WAKE UP",
+    "rank": "U",
+    "completed": false
+  },
+  "2-6": {
+    "title": "WAKE UP",
+    "rank": "U",
+    "completed": false
+  },
+  "3-6": {
+    "title": "PREP ROUTE",
+    "rank": "U",
+    "completed": false
+  },
+  "4-6": {
+    "title": "PREP ROUTE",
+    "rank": "U",
+    "completed": false
+  },
+  "0-7": {
+    "title": "LEAVE FOR SAC",
+    "rank": "U",
+    "completed": false
+  },
+  "3-7": {
+    "title": "LEAVE FOR SAC",
+    "rank": "U",
+    "completed": false
+  },
+  "4-7": {
+    "title": "LEAVE FOR SAC",
+    "rank": "U",
+    "completed": false
+  },
+  "0-8": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "1-8": {
+    "title": "SHOWER",
+    "rank": "U",
+    "completed": false
+  },
+  "2-8": {
+    "title": "SHOWER",
+    "rank": "U",
+    "completed": false
+  },
+  "3-8": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "4-8": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "0-9": {
+    "title": "DROP OFF 1",
+    "rank": "U",
+    "completed": false
+  },
+  "1-9": {
+    "title": "BREAKFAST",
+    "rank": "U",
+    "completed": false
+  },
+  "2-9": {
+    "title": "BREAKFAST",
+    "rank": "U",
+    "completed": false
+  },
+  "3-9": {
+    "title": "DROP OFF 1",
+    "rank": "U",
+    "completed": false
+  },
+  "4-9": {
+    "title": "DROP OFF 1",
+    "rank": "U",
+    "completed": false
+  },
+  "5-9": {
+    "title": "LEAVE FOR ROUTE",
+    "rank": "U",
+    "completed": false
+  },
+  "6-9": {
+    "title": "LEAVE FOR ROUTE",
+    "rank": "U",
+    "completed": false
+  },
+  "0-10": {
+    "title": "LEAVE FOR STK",
+    "rank": "U",
+    "completed": false
+  },
+  "1-10": {
+    "title": "QUEST 1",
+    "rank": "U",
+    "completed": false
+  },
+  "2-10": {
+    "title": "QUEST 1",
+    "rank": "U",
+    "completed": false
+  },
+  "3-10": {
+    "title": "LEAVE FOR STK",
+    "rank": "U",
+    "completed": false
+  },
+  "4-10": {
+    "title": "LEAVE FOR STK",
+    "rank": "U",
+    "completed": false
+  },
+  "0-11": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "1-11": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "2-11": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "3-11": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "4-11": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "0-12": {
+    "title": "LUNCH",
+    "rank": "U",
+    "completed": false
+  },
+  "1-12": {
+    "title": "LUNCH",
+    "rank": "U",
+    "completed": false
+  },
+  "2-12": {
+    "title": "LUNCH",
+    "rank": "U",
+    "completed": false
+  },
+  "3-12": {
+    "title": "LUNCH",
+    "rank": "U",
+    "completed": false
+  },
+  "4-12": {
+    "title": "LUNCH",
+    "rank": "U",
+    "completed": false
+  },
+  "0-13": {
+    "title": "LUNCH",
+    "rank": "U",
+    "completed": false
+  },
+  "3-13": {
+    "title": "LUNCH",
+    "rank": "U",
+    "completed": false
+  },
+  "4-13": {
+    "title": "LUNCH",
+    "rank": "U",
+    "completed": false
+  },
+  "0-14": {
+    "title": "LEAVE FOR SAC",
+    "rank": "U",
+    "completed": false
+  },
+  "1-14": {
+    "title": "QUEST 2",
+    "rank": "U",
+    "completed": false
+  },
+  "2-14": {
+    "title": "QUEST 2",
+    "rank": "U",
+    "completed": false
+  },
+  "3-14": {
+    "title": "LEAVE FOR SAC",
+    "rank": "U",
+    "completed": false
+  },
+  "4-14": {
+    "title": "LEAVE FOR SAC",
+    "rank": "U",
+    "completed": false
+  },
+  "5-14": {
+    "title": "LUNCH",
+    "rank": "U",
+    "completed": false
+  },
+  "6-14": {
+    "title": "LUNCH",
+    "rank": "U",
+    "completed": false
+  },
+  "0-15": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "3-15": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "4-15": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "0-16": {
+    "title": "DROP OFF 2",
+    "rank": "U",
+    "completed": false
+  },
+  "1-16": {
+    "title": "GYM",
+    "rank": "U",
+    "completed": false
+  },
+  "2-16": {
+    "title": "GYM",
+    "rank": "U",
+    "completed": false
+  },
+  "3-16": {
+    "title": "DROP OFF 2",
+    "rank": "U",
+    "completed": false
+  },
+  "4-16": {
+    "title": "DROP OFF 2",
+    "rank": "U",
+    "completed": false
+  },
+  "0-17": {
+    "title": "DROP OFF 2",
+    "rank": "U",
+    "completed": false
+  },
+  "3-17": {
+    "title": "DROP OFF 2",
+    "rank": "U",
+    "completed": false
+  },
+  "4-17": {
+    "title": "DROP OFF 2",
+    "rank": "U",
+    "completed": false
+  },
+  "0-18": {
+    "title": "LEAVE FOR STK",
+    "rank": "U",
+    "completed": false
+  },
+  "1-18": {
+    "title": "QUEST 3",
+    "rank": "U",
+    "completed": false
+  },
+  "2-18": {
+    "title": "QUEST 3",
+    "rank": "U",
+    "completed": false
+  },
+  "3-18": {
+    "title": "LEAVE FOR STK",
+    "rank": "U",
+    "completed": false
+  },
+  "4-18": {
+    "title": "LEAVE FOR STK",
+    "rank": "U",
+    "completed": false
+  },
+  "0-19": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "3-19": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "4-19": {
+    "title": "BREAK",
+    "rank": "U",
+    "completed": false
+  },
+  "0-20": {
+    "title": "UNLOAD",
+    "rank": "U",
+    "completed": false
+  },
+  "1-20": {
+    "title": "UNWIND",
+    "rank": "U",
+    "completed": false
+  },
+  "2-20": {
+    "title": "UNWIND",
+    "rank": "U",
+    "completed": false
+  },
+  "3-20": {
+    "title": "UNLOAD",
+    "rank": "U",
+    "completed": false
+  },
+  "4-20": {
+    "title": "UNLOAD",
+    "rank": "U",
+    "completed": false
+  },
+  "6-20": {
+    "title": "CLOCK OUT",
+    "rank": "U",
+    "completed": false
+  },
+  "0-21": {
+    "title": "PREP NEXT DAY",
+    "rank": "U",
+    "completed": false
+  },
+  "3-21": {
+    "title": "PREP NEXT DAY",
+    "rank": "U",
+    "completed": false
+  },
+  "4-21": {
+    "title": "PREP NEXT DAY",
+    "rank": "U",
+    "completed": false
+  },
+  "5-21": {
+    "title": "CLOCK OUT",
+    "rank": "U",
+    "completed": false
+  },
+  "0-22": {
+    "title": "CLOCK OUT",
+    "rank": "U",
+    "completed": false
+  },
+  "3-22": {
+    "title": "CLOCK OUT",
+    "rank": "U",
+    "completed": false
+  },
+  "4-22": {
+    "title": "CLOCK OUT",
+    "rank": "U",
+    "completed": false
+  },
+  "0-23": {
+    "title": "UNWIND",
+    "rank": "U",
+    "completed": false
+  },
+  "3-23": {
+    "title": "UNWIND",
+    "rank": "U",
+    "completed": false
+  },
+  "4-23": {
+    "title": "UNWIND",
+    "rank": "U",
+    "completed": false
+  },
+  "0-24": {
+    "title": "SHOWER",
+    "rank": "U",
+    "completed": false
+  },
+  "3-24": {
+    "title": "SHOWER",
+    "rank": "U",
+    "completed": false
+  },
+  "4-24": {
+    "title": "SHOWER",
+    "rank": "U",
+    "completed": false
+  },
+  "5-24": {
+    "title": "SHOWER",
+    "rank": "U",
+    "completed": false
+  },
+  "6-24": {
+    "title": "SHOWER",
+    "rank": "U",
+    "completed": false
+  },
+  "0-25": {
+    "title": "QUEST 1",
+    "rank": "U",
+    "completed": false
+  },
+  "3-25": {
+    "title": "QUEST 1",
+    "rank": "U",
+    "completed": false
+  },
+  "4-25": {
+    "title": "QUEST 1",
+    "rank": "U",
+    "completed": false
+  },
+  "5-25": {
+    "title": "QUEST 1",
+    "rank": "U",
+    "completed": false
+  },
+  "6-25": {
+    "title": "QUEST 1",
+    "rank": "U",
+    "completed": false
+  },
+  "0-26": {
+    "title": "DINNER",
+    "rank": "U",
+    "completed": false
+  },
+  "1-26": {
+    "title": "DINNER",
+    "rank": "U",
+    "completed": false
+  },
+  "2-26": {
+    "title": "DINNER",
+    "rank": "U",
+    "completed": false
+  },
+  "3-26": {
+    "title": "DINNER",
+    "rank": "U",
+    "completed": false
+  },
+  "4-26": {
+    "title": "DINNER",
+    "rank": "U",
+    "completed": false
+  },
+  "5-26": {
+    "title": "DINNER",
+    "rank": "U",
+    "completed": false
+  },
+  "6-26": {
+    "title": "DINNER",
+    "rank": "U",
+    "completed": false
+  },
+  "0-27": {
+    "title": "QUEST 2",
+    "rank": "U",
+    "completed": false
+  },
+  "3-27": {
+    "title": "QUEST 2",
+    "rank": "U",
+    "completed": false
+  },
+  "4-27": {
+    "title": "QUEST 2",
+    "rank": "U",
+    "completed": false
+  },
+  "5-27": {
+    "title": "QUEST 2",
+    "rank": "U",
+    "completed": false
+  },
+  "6-27": {
+    "title": "QUEST 2",
+    "rank": "U",
+    "completed": false
+  },
+  "0-28": {
+    "title": "PREP NEXT DAY",
+    "rank": "U",
+    "completed": false
+  },
+  "1-28": {
+    "title": "PREP NEXT DAY",
+    "rank": "U",
+    "completed": false
+  },
+  "2-28": {
+    "title": "PREP NEXT DAY",
+    "rank": "U",
+    "completed": false
+  },
+  "3-28": {
+    "title": "PREP NEXT DAY",
+    "rank": "U",
+    "completed": false
+  },
+  "4-28": {
+    "title": "PREP NEXT DAY",
+    "rank": "U",
+    "completed": false
+  },
+  "5-28": {
+    "title": "PREP NEXT DAY",
+    "rank": "U",
+    "completed": false
+  },
+  "6-28": {
+    "title": "PREP NEXT DAY",
+    "rank": "U",
+    "completed": false
+  },
+  "0-29": {
+    "title": "MAKE BEAT",
+    "rank": "U",
+    "completed": false
+  },
+  "1-29": {
+    "title": "MAKE BEAT",
+    "rank": "U",
+    "completed": false
+  },
+  "2-29": {
+    "title": "MAKE BEAT",
+    "rank": "U",
+    "completed": false
+  },
+  "3-29": {
+    "title": "MAKE BEAT",
+    "rank": "U",
+    "completed": false
+  },
+  "4-29": {
+    "title": "MAKE BEAT",
+    "rank": "U",
+    "completed": false
+  },
+  "5-29": {
+    "title": "MAKE BEAT",
+    "rank": "U",
+    "completed": false
+  },
+  "6-29": {
+    "title": "MAKE BEAT",
+    "rank": "U",
+    "completed": false
+  },
+  "0-30": {
+    "title": "GAME",
+    "rank": "U",
+    "completed": false
+  },
+  "1-30": {
+    "title": "GAME",
+    "rank": "U",
+    "completed": false
+  },
+  "2-30": {
+    "title": "GAME",
+    "rank": "U",
+    "completed": false
+  },
+  "3-30": {
+    "title": "GAME",
+    "rank": "U",
+    "completed": false
+  },
+  "4-30": {
+    "title": "GAME",
+    "rank": "U",
+    "completed": false
+  },
+  "5-30": {
+    "title": "GAME",
+    "rank": "U",
+    "completed": false
+  },
+  "6-30": {
+    "title": "GAME",
+    "rank": "U",
+    "completed": false
+  },
+  "0-32": {
+    "title": "SLEEP",
+    "rank": "U",
+    "completed": false
+  },
+  "1-32": {
+    "title": "SLEEP",
+    "rank": "U",
+    "completed": false
+  },
+  "2-32": {
+    "title": "SLEEP",
+    "rank": "U",
+    "completed": false
+  },
+  "3-32": {
+    "title": "SLEEP",
+    "rank": "U",
+    "completed": false
+  },
+  "4-32": {
+    "title": "SLEEP",
+    "rank": "U",
+    "completed": false
+  },
+  "5-32": {
+    "title": "SLEEP",
+    "rank": "U",
+    "completed": false
+  },
+  "6-32": {
+    "title": "SLEEP",
+    "rank": "U",
+    "completed": false
+  }
+};
+
+
+  let state = null;
+  let modalCtx = null;
+  let mobileDay = 0;
+
+  function uid(){ return Math.random().toString(36).slice(2,10); }
+
+  function defaultState(){
+    return {
+      character:{ level:1, xp:0, gold:0 },
+      schedule: JSON.parse(JSON.stringify(IMPORTED_SCHEDULE)),
+      quests:[],
+      rewards:[],
+      syncedDays:{}
+    };
+  }
+
+  async function loadState(){
+    try{
+      if(window.storage && typeof window.storage.get === 'function'){
+        const res = await window.storage.get(STORAGE_KEY, false);
+        if(res && res.value){
+          const parsed = JSON.parse(res.value);
+          if(!parsed.syncedDays) parsed.syncedDays = {};
+          return parsed;
+        }
+      }
+    }catch(e){ console.warn('Platform storage unavailable; using browser storage.', e); }
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(!parsed.syncedDays) parsed.syncedDays = {};
+        return parsed;
+      }
+    }catch(e){ console.warn('Browser storage unavailable.', e); }
+    return defaultState();
+  }
+
+  async function saveState(){
+    const payload = JSON.stringify(state);
+    try{
+      if(window.storage && typeof window.storage.set === 'function'){
+        await window.storage.set(STORAGE_KEY, payload, false);
+        return;
+      }
+    }catch(e){ console.warn('Platform storage unavailable; using browser storage.', e); }
+    try{
+      localStorage.setItem(STORAGE_KEY, payload);
+    }catch(e){ console.error('Could not save state', e); }
+  }
+
+  function escapeHTML(str){
+    return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function xpForLevel(level){ return 80 + (level-1)*40; }
+
+  function titleForLevel(level){
+    if(level < 3) return 'Initiate';
+    if(level < 5) return 'Operator';
+    if(level < 8) return 'Specialist';
+    if(level < 11) return 'Enforcer';
+    if(level < 15) return 'Overseer';
+    return 'Architect';
+  }
+
+  function applyXP(delta){
+    const c = state.character;
+    c.xp += delta;
+    let leveledUp = false;
+    while(c.xp < 0 && c.level > 1){
+      c.level--;
+      c.xp += xpForLevel(c.level);
+    }
+    if(c.xp < 0) c.xp = 0;
+    while(c.xp >= xpForLevel(c.level)){
+      c.xp -= xpForLevel(c.level);
+      c.level++;
+      leveledUp = true;
+    }
+    if(leveledUp) showLevelUp(c.level);
+  }
+
+  function applyGold(delta){
+    state.character.gold = Math.max(0, state.character.gold + delta);
+  }
+
+  function formatSlotLabel(slotIndex){
+    const totalMinutes = 6*60 + slotIndex*30;
+    let h = Math.floor(totalMinutes/60);
+    const m = totalMinutes % 60;
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    let h12 = h % 12; if(h12 === 0) h12 = 12;
+    return h12 + ':' + (m===0?'00':'30') + ' ' + ampm;
+  }
+
+  function computeWeekDates(){
+    const today = new Date();
+    const day = today.getDay();
+    const diffToMonday = (day === 0 ? -6 : 1-day);
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + diffToMonday);
+    const dates = [];
+    for(let i=0;i<7;i++){
+      const d = new Date(monday);
+      d.setDate(monday.getDate()+i);
+      dates.push(d);
+    }
+    return dates;
+  }
+  const WEEK_DATES = computeWeekDates();
+
+  function rankSelectOptions(selected){
+    return RANK_ORDER.map(r=>{
+      const info = RANKS[r];
+      const sel = r === selected ? 'selected' : '';
+      return `<option value="${r}" ${sel}>${r === 'U' ? '—' : r} — ${info.label} (${info.xp} DATA)</option>`;
+    }).join('');
+  }
+
+  function getDayStats(d){
+    const tasks = Object.keys(state.schedule)
+      .filter(k => k.split('-')[0] === String(d))
+      .map(k => state.schedule[k]);
+    return { total: tasks.length, done: tasks.filter(t=>t.completed).length };
+  }
+
+  function recomputeDaySync(d){
+    const stats = getDayStats(d);
+    const allDone = stats.total > 0 && stats.done === stats.total;
+    const wasSynced = !!state.syncedDays[d];
+    if(allDone && !wasSynced){
+      state.syncedDays[d] = true;
+      applyXP(DAY_SYNC_DATA);
+      applyGold(DAY_SYNC_CORES);
+      showDaySync(d);
+    } else if(!allDone && wasSynced){
+      state.syncedDays[d] = false;
+      applyXP(-DAY_SYNC_DATA);
+      applyGold(-DAY_SYNC_CORES);
+    }
+  }
+
+  function countSyncedDays(){
+    let n = 0;
+    for(let d=0; d<7; d++) if(state.syncedDays[d]) n++;
+    return n;
+  }
+
+  function applyMobileDay(){
+    const grid = document.getElementById('schedule-grid');
+    if(!grid) return;
+    const children = Array.from(grid.children);
+    children.forEach((el, idx)=>{
+      const col = idx % 8;
+      el.style.display = (col === 0 || col === mobileDay + 1) ? '' : 'none';
+    });
+    const label = document.getElementById('mobile-day-current');
+    if(label) label.textContent = DAY_NAMES[mobileDay];
+  }
+
+  function changeMobileDay(delta){
+    mobileDay = (mobileDay + delta + 7) % 7;
+    applyMobileDay();
+  }
+
+  /* ---------------- Rendering ---------------- */
+
+  function renderHeader(){
+    const {level, xp, gold} = state.character;
+    const need = xpForLevel(level);
+    const pct = Math.min(100, Math.round((xp/need)*100));
+    document.getElementById('level-num').textContent = level;
+    document.getElementById('level-title').textContent = titleForLevel(level);
+    document.getElementById('xp-fill').style.width = pct + '%';
+    document.getElementById('xp-text').textContent = xp + ' / ' + need + ' DATA';
+    document.getElementById('gold-count').textContent = gold;
+    document.getElementById('sync-count').textContent = countSyncedDays() + ' / 7';
+  }
+
+  function renderSchedule(){
+    let html = '<div class="corner"></div>';
+    DAY_NAMES.forEach((name, i)=>{
+      const date = WEEK_DATES[i];
+      const stats = getDayStats(i);
+      const pct = stats.total > 0 ? Math.round((stats.done/stats.total)*100) : 0;
+      const synced = !!state.syncedDays[i];
+      html += `<div class="day-head ${synced?'day-synced':''}">
+        <div class="day-name">${name}</div>
+        <div class="day-date">${date.getDate()}${stats.total?(' · '+stats.done+'/'+stats.total):''}</div>
+        <div class="day-progress"><div class="day-progress-fill" style="width:${pct}%"></div></div>
+        ${synced?'<div class="day-synced-badge">SYNCED</div>':''}
+      </div>`;
+    });
+    for(let s=0; s<SLOT_COUNT; s++){
+      const isHour = (s % 2 === 0);
+      html += `<div class="time-label ${isHour?'hour-start':''}">${formatSlotLabel(s)}</div>`;
+      for(let d=0; d<7; d++){
+        const key = d + '-' + s;
+        const task = state.schedule[key];
+        html += `<div class="slot-cell ${isHour?'hour-start':''}">`;
+        if(task){
+          const rank = RANKS[task.rank];
+          html += `<div class="task-chip ${task.completed?'completed':''}" style="--rank-color:${rank.color}" data-key="${key}">
+            <button class="node-btn ${task.completed?'checked':''}" style="--rank-color:${rank.color}" data-action="toggle-schedule" data-key="${key}" aria-label="Trigger node"></button>
+            <span class="chip-title">${escapeHTML(task.title)}</span>
+          </div>`;
+        } else {
+          html += `<button class="add-slot-btn" data-action="add-schedule" data-day="${d}" data-slot="${s}" aria-label="Add directive">+</button>`;
+        }
+        html += `</div>`;
+      }
+    }
+    document.getElementById('schedule-grid').innerHTML = html;
+    applyMobileDay();
+  }
+
+  function renderQuests(){
+    const list = state.quests;
+    const el = document.getElementById('quest-list');
+    if(list.length === 0){
+      el.innerHTML = `<div class="empty-state">No directives logged. Add one above to populate the queue.</div>`;
+      return;
+    }
+    el.innerHTML = list.map(q=>{
+      const rank = RANKS[q.rank];
+      return `<div class="quest-row">
+        <button class="node-btn ${q.completed?'checked':''}" style="--rank-color:${rank.color}" data-action="toggle-quest" data-id="${q.id}" aria-label="Trigger node"></button>
+        <span class="quest-title ${q.completed?'completed':''}">${escapeHTML(q.title)}</span>
+        <span class="rank-pill" style="--rank-color:${rank.color}">${q.rank === 'U' ? 'UNRANKED' : q.rank + ' · ' + rank.label}</span>
+        <button class="btn-danger" data-action="delete-quest" data-id="${q.id}" aria-label="Delete directive">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  function renderRewards(){
+    const list = state.rewards;
+    const el = document.getElementById('reward-list');
+    if(list.length === 0){
+      el.innerHTML = `<div class="empty-state">No upgrades installed yet. Define one above and start earning Cores.</div>`;
+      return;
+    }
+    const gold = state.character.gold;
+    el.innerHTML = list.map(r=>{
+      const canAfford = gold >= r.cost;
+      return `<div class="reward-card">
+        <button class="btn-danger" data-action="delete-reward" data-id="${r.id}" aria-label="Delete upgrade">×</button>
+        <div class="reward-title">${escapeHTML(r.title)}</div>
+        <div class="reward-cost"><span class="core-chip" style="width:18px;height:18px;font-size:9px;">C</span> ${r.cost}</div>
+        ${r.claims>0?`<div class="reward-claims">Installed ${r.claims}×</div>`:''}
+        <button class="btn" data-action="claim-reward" data-id="${r.id}" ${canAfford?'':'disabled'}>${canAfford?'Install':'Insufficient Cores'}</button>
+      </div>`;
+    }).join('');
+  }
+
+  function renderAll(){
+    renderHeader();
+    renderSchedule();
+    renderQuests();
+    renderRewards();
+  }
+
+  /* ---------------- Toasts / banners ---------------- */
+
+  function showToast(text){
+    const container = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = text;
+    container.appendChild(t);
+    setTimeout(()=> t.remove(), 2000);
+  }
+
+  function showLevelUp(level){
+    const banner = document.createElement('div');
+    banner.className = 'levelup-banner';
+    banner.innerHTML = `<div class="lu-title">Clearance Upgraded</div><div class="lu-main">Level ${level} · ${titleForLevel(level)}</div>`;
+    document.body.appendChild(banner);
+    setTimeout(()=> banner.remove(), 2800);
+  }
+
+  function showDaySync(dayIndex){
+    const banner = document.createElement('div');
+    banner.className = 'levelup-banner';
+    banner.innerHTML = `<div class="lu-title">Day Synchronized</div><div class="lu-main">${DAY_NAMES[dayIndex]} · +${DAY_SYNC_DATA} DATA / +${DAY_SYNC_CORES} CORES</div>`;
+    document.body.appendChild(banner);
+    setTimeout(()=> banner.remove(), 2800);
+  }
+
+  /* ---------------- Schedule modal ---------------- */
+
+  function openScheduleModal(day, slot, key){
+    modalCtx = { day, slot, key: key || (day+'-'+slot) };
+    const existing = state.schedule[modalCtx.key];
+    document.getElementById('modal-heading').textContent = existing ? 'Edit Directive' : 'Log Directive';
+    document.getElementById('modal-title-input').value = existing ? existing.title : '';
+    document.getElementById('modal-rank-select').innerHTML = rankSelectOptions(existing ? existing.rank : 'U');
+    document.getElementById('modal-delete-btn').classList.toggle('hidden', !existing);
+    document.getElementById('modal-overlay').classList.remove('hidden');
+    document.getElementById('modal-title-input').focus();
+  }
+
+  function closeModal(){
+    document.getElementById('modal-overlay').classList.add('hidden');
+    modalCtx = null;
+  }
+
+  function saveScheduleModal(){
+    if(!modalCtx) return;
+    const title = document.getElementById('modal-title-input').value.trim();
+    if(!title) return;
+    const rank = document.getElementById('modal-rank-select').value;
+    const existing = state.schedule[modalCtx.key];
+    state.schedule[modalCtx.key] = { title, rank, completed: existing ? existing.completed : false };
+    recomputeDaySync(modalCtx.day);
+    saveState();
+    renderAll();
+    closeModal();
+  }
+
+  function deleteScheduleModal(){
+    if(!modalCtx) return;
+    delete state.schedule[modalCtx.key];
+    recomputeDaySync(modalCtx.day);
+    saveState();
+    renderAll();
+    closeModal();
+  }
+
+  /* ---------------- Toggle / delete / claim actions ---------------- */
+
+  function toggleScheduleComplete(key){
+    const task = state.schedule[key];
+    if(!task) return;
+    task.completed = !task.completed;
+    const rank = RANKS[task.rank];
+    const sign = task.completed ? 1 : -1;
+    applyXP(sign*rank.xp);
+    applyGold(sign*rank.gold);
+    const dayIndex = Number(key.split('-')[0]);
+    recomputeDaySync(dayIndex);
+    saveState();
+    renderAll();
+    showToast((sign>0?'+':'') + sign*rank.xp + ' DATA   ' + (sign>0?'+':'') + sign*rank.gold + ' CORES');
+  }
+
+  function toggleQuestComplete(id){
+    const quest = state.quests.find(q=>q.id===id);
+    if(!quest) return;
+    quest.completed = !quest.completed;
+    const rank = RANKS[quest.rank];
+    const sign = quest.completed ? 1 : -1;
+    applyXP(sign*rank.xp);
+    applyGold(sign*rank.gold);
+    saveState();
+    renderAll();
+    showToast((sign>0?'+':'') + sign*rank.xp + ' DATA   ' + (sign>0?'+':'') + sign*rank.gold + ' CORES');
+  }
+
+  function deleteQuest(id){
+    state.quests = state.quests.filter(q=>q.id!==id);
+    saveState();
+    renderQuests();
+  }
+
+  function addQuest(){
+    const input = document.getElementById('new-quest-title');
+    const title = input.value.trim();
+    if(!title) return;
+    const rank = document.getElementById('new-quest-rank').value;
+    state.quests.push({ id:uid(), title, rank, completed:false });
+    input.value = '';
+    saveState();
+    renderQuests();
+  }
+
+  function addReward(){
+    const titleInput = document.getElementById('new-reward-title');
+    const costInput = document.getElementById('new-reward-cost');
+    const title = titleInput.value.trim();
+    const cost = Math.max(1, parseInt(costInput.value, 10) || 1);
+    if(!title) return;
+    state.rewards.push({ id:uid(), title, cost, claims:0 });
+    titleInput.value = '';
+    costInput.value = '20';
+    saveState();
+    renderRewards();
+  }
+
+  function claimReward(id){
+    const reward = state.rewards.find(r=>r.id===id);
+    if(!reward) return;
+    if(state.character.gold < reward.cost) return;
+    applyGold(-reward.cost);
+    reward.claims++;
+    saveState();
+    renderAll();
+    showToast('Installed: ' + reward.title);
+  }
+
+  function deleteReward(id){
+    state.rewards = state.rewards.filter(r=>r.id!==id);
+    saveState();
+    renderRewards();
+  }
+
+  /* ---------------- Reset ---------------- */
+
+  let resetPending = false;
+  let resetTimer = null;
+  function handleReset(){
+    const btn = document.getElementById('reset-btn');
+    if(!resetPending){
+      resetPending = true;
+      btn.textContent = 'Click again to confirm wipe';
+      resetTimer = setTimeout(()=>{
+        resetPending = false;
+        btn.textContent = 'Wipe local cache';
+      }, 4000);
+      return;
+    }
+    clearTimeout(resetTimer);
+    resetPending = false;
+    btn.textContent = 'Wipe local cache';
+    state = defaultState();
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    saveState();
+    renderAll();
+    showToast('Build reset. Imported week restored.');
+  }
+
+  /* ---------------- Tabs ---------------- */
+
+  function switchTab(tab){
+    document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab === tab));
+    document.getElementById('panel-schedule').classList.toggle('hidden', tab !== 'schedule');
+    document.getElementById('panel-quests').classList.toggle('hidden', tab !== 'quests');
+    document.getElementById('panel-rewards').classList.toggle('hidden', tab !== 'rewards');
+  }
+
+  /* ---------------- Event wiring ---------------- */
+
+  function wireEvents(){
+    document.querySelectorAll('.tab-btn').forEach(b=>{
+      b.addEventListener('click', ()=> switchTab(b.dataset.tab));
+    });
+
+    document.getElementById('mobile-prev').addEventListener('click', ()=> changeMobileDay(-1));
+    document.getElementById('mobile-next').addEventListener('click', ()=> changeMobileDay(1));
+    let touchStartX = null;
+    const wrap = document.querySelector('.schedule-wrap');
+    wrap.addEventListener('touchstart', e=>{ touchStartX = e.changedTouches[0].screenX; }, {passive:true});
+    wrap.addEventListener('touchend', e=>{
+      if(touchStartX === null) return;
+      const dx = e.changedTouches[0].screenX - touchStartX;
+      if(Math.abs(dx) > 55) changeMobileDay(dx < 0 ? 1 : -1);
+      touchStartX = null;
+    }, {passive:true});
+
+    document.getElementById('schedule-grid').addEventListener('click', (e)=>{
+      const toggleBtn = e.target.closest('[data-action="toggle-schedule"]');
+      if(toggleBtn){ toggleScheduleComplete(toggleBtn.dataset.key); return; }
+      const addBtn = e.target.closest('[data-action="add-schedule"]');
+      if(addBtn){ openScheduleModal(Number(addBtn.dataset.day), Number(addBtn.dataset.slot)); return; }
+      const chip = e.target.closest('.task-chip');
+      if(chip){
+        const key = chip.dataset.key;
+        const parts = key.split('-');
+        openScheduleModal(Number(parts[0]), Number(parts[1]), key);
+      }
+    });
+
+    document.getElementById('modal-save-btn').addEventListener('click', saveScheduleModal);
+    document.getElementById('modal-delete-btn').addEventListener('click', deleteScheduleModal);
+    document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-overlay').addEventListener('click', (e)=>{
+      if(e.target.id === 'modal-overlay') closeModal();
+    });
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape' && !document.getElementById('modal-overlay').classList.contains('hidden')) closeModal();
+    });
+    document.getElementById('modal-title-input').addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') saveScheduleModal();
+    });
+
+    document.getElementById('quest-list').addEventListener('click', (e)=>{
+      const toggleBtn = e.target.closest('[data-action="toggle-quest"]');
+      if(toggleBtn){ toggleQuestComplete(toggleBtn.dataset.id); return; }
+      const delBtn = e.target.closest('[data-action="delete-quest"]');
+      if(delBtn){ deleteQuest(delBtn.dataset.id); }
+    });
+    document.getElementById('add-quest-btn').addEventListener('click', addQuest);
+    document.getElementById('new-quest-title').addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') addQuest();
+    });
+
+    document.getElementById('reward-list').addEventListener('click', (e)=>{
+      const claimBtn = e.target.closest('[data-action="claim-reward"]');
+      if(claimBtn){ claimReward(claimBtn.dataset.id); return; }
+      const delBtn = e.target.closest('[data-action="delete-reward"]');
+      if(delBtn){ deleteReward(delBtn.dataset.id); }
+    });
+    document.getElementById('add-reward-btn').addEventListener('click', addReward);
+
+    document.getElementById('reset-btn').addEventListener('click', handleReset);
+  }
+
+  /* ---------------- Init ---------------- */
+
+  async function init(){
+    state = await loadState();
+    document.getElementById('new-quest-rank').innerHTML = rankSelectOptions('B');
+    wireEvents();
+    renderAll();
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('main').classList.remove('hidden');
+  }
+
+  init();
+})();
+</script>
+
+<style>
+  #pwa-install{position:fixed;right:16px;bottom:16px;z-index:80;display:none;padding:10px 14px;border:1px solid var(--border-bright);border-radius:6px;background:linear-gradient(180deg,var(--purple-bright),var(--purple-deep));color:#fff;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;box-shadow:var(--glow);cursor:pointer}
+</style>
+<button id="pwa-install" type="button">Install CORTEX</button>
+<script>
+(function(){
+  let deferredPrompt;
+  const btn=document.getElementById('pwa-install');
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;btn.style.display='block';});
+  btn.addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;btn.style.display='none';});
+  window.addEventListener('appinstalled',()=>{btn.style.display='none';});
+  if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+})();
+</script>
+</body>
+</html>
